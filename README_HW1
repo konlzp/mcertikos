@@ -1,0 +1,116 @@
+<<<<<<< HEAD
+List here the following info:
+1. who you have worked with; 
+2. whether you coded this assignment together, and if not, who worked on which part;
+3. brief description of what you have implemented;
+4. and anything else you would like us to know.
+=======
+###Team: Zhipei Luo, Wen Sheng
+
+Qustion A:
+1. At what point does the processor start executing 32-bit code? What exactly causes the switch from 16- to 32-bit mode?
+
+A: The processor starts executing 32-bit code right after the bootstrap GDT is loaded at the switch_prot section. The code in boot/boot1/boot1.S:
+	movl	%eax, %cr0
+sets the cr0 control register to enable the protected mode, which causes the transition. The program then jump to a protected code segment through:
+	ljmp	$PROT_MODE_CSEG, $protcseg
+from which the program is run in 32-bit.
+
+2. What is the last instruction of the boot loader executed, and what is the first instruction of the kernel it just loaded?
+
+A: The last instruction the boot loader execute is in file:boot/boot1/ exec_kernel.S, where it jump to the address stored in %edx:
+	jmp *%edx
+The address stored in %edx was stored in the stack, and it leads to kern/init/entry.S, it is the entry to the kernel first executes:
+	cli
+To clear the environment, and then it check whether provide multiboot information through the following code:
+	cmpl	$MULTIBOOT_BOOTLOADER_MAGIC, %eax
+
+3. Where is the first instruction of the kernel?
+	
+A: The first instruction of the kernel is in file /kern/init/entry.S.
+
+4. How does the boot loader decide how many sectors it must read in order to fetch the entire kernel from disk? Where does it find this information?
+
+A: In function boot/boot1/boot1main.c: load_kernel(), it first reads the first section to get the ELF header, from the header the boot loader gets the offset of the kernel, number of sections needed to load the entire kernel and so on. The corresponding code follows:
+
+	readsection((uint32_t) ELFHDR, SECTOR_SIZE * 8, 0, dkernel);
+
+	ph = (proghdr *)((uint8_t *) ELFHDR + ELFHDR -> e_phoff);
+	eph = ph + ELFHDR -> e_phnum;
+
+	for (; ph < eph; ph++)
+	{
+		readsection(ph->p_va, ph->p_memsz, ph->p_offset, dkernel);
+	}
+
+Question B:
+
+1. Explain the interface between dprintf.c and console.c. Specifically, what function does console.c export? How is this function used by dprintf.c?
+
+A: The "void cons_putc(char c)" is imported to be used in dprintf.c, where it is looped to put a whole string to the console.
+
+2. Explain the following from video.c?
+
+A: It handles the situation where the current page of the console is full, a blank new line is needed to receive future input. It first move the content in current buffer forward for a length of CRT_COLS, using memmove function. In the for loop, the code tries to blank out the new line, while the final line of code moves the pointer back to the start of the new line. The general effect is that thecurrent window scrolls down one line.
+
+3. Explore GCC's calling convention on the x86, and trace the execution of the following code step-by-step.
+
+(1). In the call to dprintf(), to what does fmt point? To what does ap point?
+
+A: The fmt points to the format string argument, "x %d, y %x, z%d\n". While ap points to the list of argument x, y, z.
+
+(2). List each call to cons_putc, va_arg, and vdprintf. For cons_putc, list its argument as well. For va_arg, list what ap points to before and after the call. for vdprintf list the values of its two arguments.
+
+A:	vdprintf("x %d, y %x, z%d\n", x, y, z)
+	
+	ap -> x
+	va_arg(ap, int)
+	ap -> y
+
+	ap -> y
+	va_arg(ap, unsigned int)
+	ap -> z
+
+	ap -> z
+	va_arg(ap, int)
+	ap -> something
+
+	cons_putc('x')
+	cons_putc(' ')
+	cons_putc('1')
+	cons_putc(',')
+	cons_putc(' ')
+	cons_putc('y')
+	cons_putc(' ')
+	cons_putc('3')
+	cons_putc(',')
+	cons_putc(' ')
+	cons_putc('z')
+	cons_putc(' ')
+	cons_putc('4')
+	cons_putc('\n')
+	cons_putc('\0')
+
+4. Run the following code:
+
+A:	The output is "He110 world".
+	First, dprintf() calls vdprintf("H%x wo%s", 57616, 0x00646c72), which subsequently calls vprintfmt(). vprintfmt() goes through each character, when it encounters '%' and 'x', it then calls printnum() to generate the hex version of 57616, which is e110. When it encounters "%s", the program then turn to process the string, due to the little-endian feature of x86, the chars are subsequently '\72','\6c', '\64' and '\00'. Finally, it calls cputs() to print the characters to the console screen.
+	If x86 is big-endian, i should be set to 0x726c6400, while 57616 doesn't need to be changed.
+
+5. In the following code, what is going to be printed after y=? Why does this happen?
+
+A: it is always 0, while the following are subsequently 1058087 1060685 18. It happens because the ap pointer in dprintf was moved to the next unit, the value of the unit was printed to the console.
+
+6. How would you have to change printf or its interface so that it would still be possible to pass it a variable number of arguments?
+
+A: The dprintf should reverse the ap list first before it is passed to vdprintf. 
+
+
+#############################################################################
+
+In this assignment we implemented physical memory management, in which we defined some of the basic operations concerned in pmm and initialized the physical allocation table. Finally we implemented the physical allocation function as well as the physical free function. Beyond that, we added a new command to the kernel monitor,which prints back part of the current stack status.
+
+
+
+List here the name of your partner, answers to the questions in the "Question" section of the lab, the brief description of what you have implemented, and anything else you would like us to know.
+>>>>>>> lab1

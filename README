@@ -1,0 +1,6 @@
+Teammate: Zhipei Luo, Wen Sheng
+		  We work on the ideas together, however we write our own code seperately.
+
+What have we done: We have implemented the virtual memory management part of the OS kernel, after which the kernel is able to maps the virtual address the user specified into a physical address in the memory. Through the demonstration of the 'runproc' command, we show that our kenel can successfully handle the operations of the virtual addresses.
+
+To be frank, we thought of making our test cases at first. However, it is already quite tiring to just finish the coding and debugging, and we simply don't want to face those layers anymore(although it is not hard to write more detailed test cases), especially the best test case is the runproc command provided in qemu.
